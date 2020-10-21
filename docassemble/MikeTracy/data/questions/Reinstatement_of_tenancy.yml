@@ -1,0 +1,242 @@
+comment: |
+  The metadata section controls the tab title and saved interview title. You can delete this section if you include this YAML file in another YAML file.
+metadata:
+  title: |
+    Reinstatement of Tenancy Form
+  short title: |
+    Reinstatement of Tenancy
+---
+comment: |
+  This section is used by MAVirtualCourts to control how some of the questions work.
+mandatory: True
+code: |
+  interview_metadata # make sure we initialize the object
+  if not defined("interview_metadata['Reinstatement_of_tenancy']"):
+    interview_metadata.initializeObject('Reinstatement_of_tenancy')
+  interview_metadata['Reinstatement_of_tenancy'].update({
+    'title': 'Reinstatement of Tenancy Form',
+    'short title': 'Reinstatement of Tenancy',
+    'description': 'This forms allows a tenant to file a motion to reinstate their tenancy, after eviction have started, if applicable conditions are satisfied.',
+    'original_form': '',
+    'allowed courts': [
+      'Housing Court',
+    ],
+    'categories': [
+      'Housing',
+    ],
+    'logic block variable': 'Reinstatement_of_tenancy',
+    'attachment block variable': 'Reinstatement_of_tenancy_attachment',
+    'typical role': 'plaintiff',
+  })
+---
+include:
+  - docassemble.MAVirtualCourt:basic-questions.yml
+---
+features:
+  navigation: True
+---
+sections:
+  - review_Reinstatement_of_tenancy: Review your answers
+---
+id: interview_order_Reinstatement_of_tenancy
+code: |
+  # This is a placeholder to control logic flow in this interview
+
+  basic_questions_intro_screen 
+  Reinstatement_of_tenancy_intro
+  # Set the allowed courts for this interview
+  allowed_courts = interview_metadata["Reinstatement_of_tenancy"]["allowed courts"]
+  nav.set_section('review_Reinstatement_of_tenancy')
+  user_role = 'plaintiff'
+  docket_number
+  bananas
+  dismissal_reasons
+  rent_month
+  users[0]
+  users[0].address.address
+  str(defendants)
+  users[0].email
+  users[0].phone_number
+  courts[0]
+  signature_date
+  str(plaintiffs)
+  Reinstatement_of_tenancy_preview_question # Pre-canned preview screen
+  basic_questions_signature_flow
+  users[0].signature
+  Reinstatement_of_tenancy = True
+---
+comment: |
+  This question is used to introduce your interview. Please customize
+id: Reinstatement of Tenancy Form
+continue button field: Reinstatement_of_tenancy_intro
+question: |
+  Reinstatement of Tenancy Form
+subquestion: |
+  This forms allows a tenant to file a motion to reinstate their tenancy, after eviction have started, if applicable conditions are satisfied.
+---
+id: Placeholder preview screen
+continue button field: Reinstatement_of_tenancy_preview_question
+question: |
+  Placeholder preview screen
+subquestion: |
+  Here is a preview of the form you'll sign on the next page. 
+
+   ${Reinstatement_of_tenancy_attachment['preview']}
+---
+id: Screen one
+question: |
+  Screen one
+subquestion: |
+  What is the Docket Number of your case?
+fields:
+  - 'Docket number': docket_numbers
+    datatype: number
+---
+id: How was the tenancy reinstated?
+question: |
+  How was the tenancy reinstated?
+subquestion: |
+  Please check the applicable reasons why your tenancy has been reinstated or a new one was created.
+fields:
+  - 'Does your Notice to Quit have "rights of reservation" language on it that states that that Landlord reserves future monies received by you for "use and occupancy" and "not for rent?"': reservation_rights
+    datatype: yesno
+---
+id: Continued rent payments
+question: jjnkn
+fields:
+  - 'Did you continue to pay your Landlord rent after you received the Notice to quit?': bananas
+    datatype: yesno
+    show if: reservation_rights
+---
+id: How was the tenancy reinstated?
+question: |
+  How was the tenancy reinstated?
+subquestion: |
+  Please check the applicable reasons why your tenancy has been reinstated or a new one was created.
+  - 'grapes': grapes
+    datatype: yesno
+  - 'Pears': pears
+    datatype: yesno
+---
+id: Dismissal Reasons
+question: |
+  Dismissal Reasons
+subquestion: |
+  Please describe how your tenancy was reinstated or how a new one was created.
+fields:
+  - 'Other reason(s) for dismissal': dismissal_reasons
+    input type: area
+---
+id: Rent Payments
+question: |
+  Rent Payments
+subquestion: |
+  For what month(s) have you made rent payments?
+fields:
+  - 'What month(s) has your Landlord accepted rent payment for?': rent_month
+---
+progress: 100
+mandatory: True
+id: Placeholder download screen
+question: |
+  Placeholder download screen
+subquestion: |
+  Placeholder
+  
+  ### Next steps
+  
+  1. Step 1
+  1. Step 2
+  
+  Below is a preview of your form.
+  
+  ${Reinstatement_of_tenancy_attachment['final'] }
+need: Reinstatement_of_tenancy
+attachment code: Reinstatement_of_tenancy_attachment['final']
+---
+objects:
+  - Reinstatement_of_tenancy_attachment: DADict
+---
+attachment:
+    variable name: Reinstatement_of_tenancy_attachment[i]
+    name: Reinstatement of Tenancy
+    filename: Reinstatement_of_Tenancy
+    docx template file: Reinstatement_of_tenancy.docx
+---
+sets: initial_defense.new_tenancy
+code: |
+  if post_ntq_waiver['rent'] and not ntq_contains_reservation:
+    initial_defense.new_tenancy = True
+  elif post_ntq_waiver['lease']:
+    initial_defense.new_tenancy = True
+  else:
+    initial_defense.new_tenancy = False
+mandatory: True  
+---
+id: Reinstatement_of_tenancy review screen
+event: review_Reinstatement_of_tenancy
+question: |
+  Placeholder Review Screen
+subquestion: |
+  Edit your answers below
+review: 
+  - Edit: docket_numbers
+    button: |
+      Docket number:
+      ${ docket_numbers }
+  - Edit: bananas
+    button: |
+      Bananas:
+      ${ word(yesno(bananas)) }
+  - Edit: grapes
+    button: |
+      Grapes:
+      ${ word(yesno(grapes)) }
+  - Edit: dismissal_reasons
+    button: |
+      Other reason(s) for dismissal:
+      > ${ single_paragraph(dismissal_reasons) }
+  - Edit: rent_month
+    button: |
+      What month(s) has your Landlord accepted rent payment for?:
+      ${ rent_month }
+  - Edit: pears
+    button: |
+      Pears:
+      ${ word(yesno(pears)) }
+  - Edit: users[0].name.first
+    button: |
+      users[0]:
+      ${ users[0] }
+  - Edit: users[0].address.address
+    button: |
+      users[0].address.address:
+      ${ users[0].address.address }
+  - Edit: defendants[0].name.first
+    button: |
+      defendants:
+      ${ defendants }
+  - Edit: users[0].email
+    button: |
+      users[0].email:
+      ${ users[0].email }
+  - Edit: users[0].signature
+    button: |
+      users[0].signature:
+      ${ users[0].signature }
+  - Edit: users[0].phone_number
+    button: |
+      users[0].phone_number:
+      ${ users[0].phone_number }
+  - Edit: courts[0].name.first
+    button: |
+      courts[0]:
+      ${ courts[0] }
+  - Edit: signature_date
+    button: |
+      signature_date:
+      ${ signature_date }
+  - Edit: plaintiffs[0].name.first
+    button: |
+      plaintiffs:
+      ${ plaintiffs }
