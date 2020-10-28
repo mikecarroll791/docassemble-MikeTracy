@@ -41,7 +41,6 @@ sections:
 id: interview_order_Reinstatement_of_tenancy
 code: |
   # This is a placeholder to control logic flow in this interview
-
   basic_questions_intro_screen 
   Reinstatement_of_tenancy_intro
   # Set the allowed courts for this interview
@@ -49,9 +48,12 @@ code: |
   nav.set_section('review_Reinstatement_of_tenancy')
   user_role = 'plaintiff'
   docket_number
-  bananas
-  dismissal_reasons
-  rent_month
+  if reservation_rights and continue_payments:
+    rent_month
+  if new_lease:
+    effective_after_notice
+  if other_reasons:
+    dismissal_reasons
   users[0]
   users[0].address.address
   str(defendants)
@@ -83,7 +85,7 @@ subquestion: |
 
    ${Reinstatement_of_tenancy_attachment['preview']}
 ---
-id: Screen one
+id: docket number
 question: |
   Screen one
 subquestion: |
@@ -92,37 +94,34 @@ fields:
   - 'Docket number': docket_numbers
     datatype: number
 ---
-id: How was the tenancy reinstated?
-question: |
-  How was the tenancy reinstated?
-subquestion: |
-  Please check the applicable reasons why your tenancy has been reinstated or a new one was created.
-fields:
-  - 'Does your Notice to Quit have "rights of reservation" language on it that states that that Landlord reserves future monies received by you for "use and occupancy" and "not for rent?"': reservation_rights
-    datatype: yesno
+id: reservation of rights
+question: | 
+  Does your Notice to Quit have "rights of reservation" language on it that states that that Landlord reserves future monies received by you for "use and occupancy" and "not for rent? 
+yesno: reservation_rights
 ---
 id: Continued rent payments
-question: jjnkn
-fields:
-  - 'Did you continue to pay your Landlord rent after you received the Notice to quit?': bananas
-    datatype: yesno
-    show if: reservation_rights
----
-id: How was the tenancy reinstated?
 question: |
-  How was the tenancy reinstated?
-subquestion: |
-  Please check the applicable reasons why your tenancy has been reinstated or a new one was created.
-  - 'grapes': grapes
-    datatype: yesno
-  - 'Pears': pears
-    datatype: yesno
+  Did you continue to pay your Landlord rent after you received the Notice to quit?
+yesno: continue_payments
 ---
-id: Dismissal Reasons
+id: New Lease
+question: 
+  Did you enter into a new lease or execute a lease renewal or extension with your Landlord?
+yesno: new_lease
+---
+id: effective after notice
+question:
+  Is the date of your new lease, lease renewal, or lease extension effective after the date of the notice to quit?
+yesno: effective_after_notice
+---
+id: other reasons
 question: |
-  Dismissal Reasons
-subquestion: |
-  Please describe how your tenancy was reinstated or how a new one was created.
+  Do you assert any other reason, due to your Landlords actions, or  failure to act, that your tenancy was reinstated or a new one was created?
+yesno: other_reasons
+---
+id: other reasons
+question: |
+  Describe your other reasons for dismissal  
 fields:
   - 'Other reason(s) for dismissal': dismissal_reasons
     input type: area
@@ -152,7 +151,7 @@ subquestion: |
   
   ${Reinstatement_of_tenancy_attachment['final'] }
 need: Reinstatement_of_tenancy
-attachment code: Reinstatement_of_tenancy_attachment['final']
+attachment code: Reinstatement_of_tenancy.docx['final']
 ---
 objects:
   - Reinstatement_of_tenancy_attachment: DADict
@@ -184,14 +183,6 @@ review:
     button: |
       Docket number:
       ${ docket_numbers }
-  - Edit: bananas
-    button: |
-      Bananas:
-      ${ word(yesno(bananas)) }
-  - Edit: grapes
-    button: |
-      Grapes:
-      ${ word(yesno(grapes)) }
   - Edit: dismissal_reasons
     button: |
       Other reason(s) for dismissal:
@@ -200,10 +191,6 @@ review:
     button: |
       What month(s) has your Landlord accepted rent payment for?:
       ${ rent_month }
-  - Edit: pears
-    button: |
-      Pears:
-      ${ word(yesno(pears)) }
   - Edit: users[0].name.first
     button: |
       users[0]:
@@ -240,3 +227,4 @@ review:
     button: |
       plaintiffs:
       ${ plaintiffs }
+
